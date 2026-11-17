@@ -119,7 +119,9 @@ GNOME and KDE don't support third-party screen savers, so XScreenSaver is the wa
 
 ### Linux on Wayland (live wallpaper)
 
-XScreenSaver needs X11. On a Wayland compositor with layer-shell (Hyprland, Sway, river, niri, Wayfire, labwc, KDE Plasma; not GNOME), Mesh runs as your wallpaper instead: the same mesh, clock, and live mode, on every monitor, behind your windows.
+XScreenSaver needs X11. On Wayland, Mesh is a live wallpaper instead of a screen saver: it runs all the time, behind your windows, not only when the computer is idle. It is the same mesh, clock, and live mode, on every monitor.
+
+It needs a compositor with the `wlr-layer-shell` protocol: Hyprland, Sway, river, niri, Wayfire, labwc, and KDE Plasma have it. GNOME doesn't, so it can't run there.
 
 1. Unpack the tarball and run `./install.sh` (no sudo: it installs to `~/.local/bin`).
 2. Add your server and token to `~/.config/screensaver-mesh/config`. It is the same file the XScreenSaver hack reads, and the wallpaper picks up changes as soon as you save.
@@ -127,7 +129,14 @@ XScreenSaver needs X11. On a Wayland compositor with layer-shell (Hyprland, Sway
 
 It draws above a wallpaper that was started before it, such as hyprpaper or swaybg. If your desktop shell draws its own wallpaper, tell it to stop, or the two cover each other in whichever order they start: in DankMaterialShell that is **Settings → Wallpaper → Use external manager**. Under Hyprland, Mesh also puts itself back on top by itself.
 
-It is drawn on the GPU and paced by the compositor, so it stays out of your way: 30 frames a second while the nodes drift and 60 while packets move, nothing at all for a monitor that is off, and under Hyprland nothing behind a full-screen window. Set `fps = 0` and `idle_fps = 0` in the config for a frame on every refresh of the monitor. When something else needs the GPU and the compositor falls behind, the wallpaper draws less often until it has caught up. It keeps one connection to MeshMonitor open, and a poll with nothing new is an empty answer.
+Because it runs all day, it is drawn on the GPU and paced by the compositor, so it stays out of your way: nothing at all for a monitor that is off, and under Hyprland nothing behind a full-screen window. When something else needs the GPU and the compositor falls behind, the wallpaper draws less often until it has caught up. It keeps one connection to MeshMonitor open, and a poll with nothing new is an empty answer.
+
+**Frame rate.** Two keys in the config set how often it draws:
+
+- `fps` is the most frames a second while packets are moving (60 unless you change it).
+- `idle_fps` is the most frames a second while the nodes only drift (30), which on most meshes is nearly all the time, so this is the one that decides what the wallpaper costs.
+
+Lower numbers use less GPU and power; higher ones move more smoothly. Each is rounded to a whole number of the monitor's refreshes, and `0` means a frame on every refresh, so set both to `0` to run at the monitor's refresh rate.
 
 ### Web pages
 
